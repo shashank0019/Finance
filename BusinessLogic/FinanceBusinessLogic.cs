@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Finance.DataAccess;
+﻿using Finance.DataAccess;
 using Finance.Models;
+using System.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace Finance.BusinessLogic
 {
@@ -9,34 +9,34 @@ namespace Finance.BusinessLogic
     {
         private readonly FinanceDataAccess _dataAccess;
 
-        public FinanceBusinessLogic(FinanceDataAccess dataAccess)
+        public FinanceBusinessLogic(IConfiguration configuration)
         {
-            _dataAccess = dataAccess;
+            _dataAccess = new FinanceDataAccess(configuration);
         }
 
-        public GetEmployeeDetailsModel GetEmployeeDetails(long masterId)
+        public DataTable GetEmployeeDetails(int FCTID)
         {
-            return _dataAccess.GetEmployeeDetailsByMasterID(masterId);
+            return _dataAccess.GetEmployeeDetailsByMasterID(FCTID);
         }
 
-        public bool UpdateEmployeeDetails(UpdateEmployeeDetailsModel model)
+        public void UpdateEmployeeDetails(UpdateEmpDetailsRequest request)
         {
-            return _dataAccess.UpdateEmployeeDetails(model);
+            _dataAccess.UpdateEmpDetails(request);
         }
 
-        public bool InsertAttachment(InsertAttachmentModel model)
+        public void AddAttachment(InsertAttachmentRequest request)
         {
-            return _dataAccess.InsertAttachment(model);
+            _dataAccess.InsertAttachment(request);
         }
 
-        public List<GetAllAttachmentsModel> GetAllAttachments(long masterId)
+        public DataTable GetAllAttachments(int FCTID)
         {
-            return _dataAccess.GetAllAttachments(masterId);
+            return _dataAccess.GetAllAttachment(FCTID);
         }
 
-        public bool DeleteAttachment(Guid fileIndexId)
+        public void DeleteAttachment(int FileIndexID)
         {
-            return _dataAccess.DeleteAttachmentByFileIndexID(fileIndexId);
+            _dataAccess.DeleteAttachmentByFileIndexID(FileIndexID);
         }
     }
 }

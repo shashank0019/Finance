@@ -1,69 +1,51 @@
-﻿using System;
-
-namespace Finance.Models
+﻿namespace Finance.Models
 {
-    // =====================================================
     // Model for FinanceComplianceTracker_GetEmployeeDetailsByMasterID
-    // =====================================================
-    public class GetEmployeeDetailsModel
+    public class FinanceEmployeeDetails
     {
-        public long MasterID { get; set; }
-        public DateTime? ModifyDueDate { get; set; }
-        public DateTime? CompletionDate { get; set; }
-        public DateTime? ApprovalDate { get; set; }
-        public bool? IsDelay { get; set; }
-        public string? ReasonForDelay { get; set; }
-        public string? Penalty { get; set; }
-        public string? Remarks { get; set; }
-        public string? Status { get; set; }
+        public int FCTID { get; set; }
+        public string EmployeeName { get; set; }
+        public string Department { get; set; }
+        public DateTime DueDate { get; set; }
+        public DateTime CompletionDate { get; set; }
+        public DateTime ApprovalDate { get; set; }
+        public bool AnyDelay { get; set; }
+        public string DelayReason { get; set; }
+        public string LateFessPenaltyInterest { get; set; }
     }
 
-    // =====================================================
     // Model for FinanceComplianceTracker_UpdateEmpDetails
-    // =====================================================
-    public class UpdateEmployeeDetailsModel
+    public class UpdateEmpDetailsRequest
     {
-        public long MasterID { get; set; }
-        public DateTime? ModifyDueDate { get; set; }
-        public DateTime? CompletionDate { get; set; }
-        public DateTime? ApprovalDate { get; set; }
-        public bool? IsDelay { get; set; }
-        public string? ReasonForDelay { get; set; }
-        public string? Penalty { get; set; }
-        public string? Remarks { get; set; }
-        public string? EmpCode { get; set; }
+        public int FCTID { get; set; }
+        public DateTime UpdatedDueDate { get; set; }
+        public DateTime CompletionDate { get; set; }
+        public DateTime ApprovalDate { get; set; }
+        public bool AnyDelay { get; set; }
+        public string DelayReason { get; set; }
+        public string LateFessPenaltyInterest { get; set; }
     }
 
-    // =====================================================
     // Model for FinanceComplianceTracker_InsertAttachment
-    // =====================================================
-    public class InsertAttachmentModel
+    public class InsertAttachmentRequest
     {
-        public long MasterID { get; set; }
-        public string DocumentName { get; set; } = string.Empty;
-        public string DocumentPath { get; set; } = string.Empty;
-        public Guid FileIndexID { get; set; }
-        public string UploadedBy { get; set; } = string.Empty;
+        public int FCTID { get; set; }
+        public int FileIndexID { get; set; }
     }
 
-    // =====================================================
     // Model for FinanceComplianceTracker_GetAllAttachment
-    // =====================================================
-    public class GetAllAttachmentsModel
+    public class AttachmentDetails
     {
-        public Guid FileIndexID { get; set; }
-        public long MasterID { get; set; }
-        public string DocumentName { get; set; } = string.Empty;
-        public string DocumentPath { get; set; } = string.Empty;
-        public string UploadedBy { get; set; } = string.Empty;
-        public DateTime UploadedOn { get; set; }
+        public int FileIndexID { get; set; }
+        public int FCTID { get; set; }
+        public string FileName { get; set; }
+        public string FilePath { get; set; }
+        public DateTime UploadedDate { get; set; }
     }
 
-    // =====================================================
     // Model for FinanceComplianceTracker_DeleteAttachmentByFileIndexID
-    // =====================================================
-    public class DeleteAttachmentModel
+    public class DeleteAttachmentRequest
     {
-        public Guid FileIndexID { get; set; }
+        public int FileIndexID { get; set; }
     }
 }

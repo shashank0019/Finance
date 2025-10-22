@@ -1,55 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Finance.BusinessLogic;
 using Finance.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Finance.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class FinanceControllers : ControllerBase
+    public class FinanceController : ControllerBase
     {
-        private readonly FinanceBusinessLogic _business;
+        private readonly FinanceBusinessLogic _logic;
 
-        public FinanceControllers(FinanceBusinessLogic business)
+        public FinanceController(IConfiguration configuration)
         {
-            _business = business;
+            _logic = new FinanceBusinessLogic(configuration);
         }
 
-        [HttpGet("GetEmployeeDetails/{masterId}")]
-        public IActionResult GetEmployeeDetails(long masterId)
+        [HttpGet("GetEmployeeDetails/{FCTID}")]
+        public IActionResult GetEmployeeDetails(int FCTID)
         {
-            var data = _business.GetEmployeeDetails(masterId);
-            return Ok(data);
+            var result = _logic.GetEmployeeDetails(FCTID);
+            return Ok(result);
         }
 
         [HttpPost("UpdateEmployeeDetails")]
-        public IActionResult UpdateEmployeeDetails([FromBody] UpdateEmployeeDetailsModel model)
+        public IActionResult UpdateEmployeeDetails([FromBody] UpdateEmpDetailsRequest request)
         {
-            var result = _business.UpdateEmployeeDetails(model);
-            return Ok(result ? "Updated Successfully" : "Update Failed");
+            _logic.UpdateEmployeeDetails(request);
+            return Ok("Employee details updated successfully.");
         }
 
         [HttpPost("InsertAttachment")]
-        public IActionResult InsertAttachment([FromBody] InsertAttachmentModel model)
+        public IActionResult InsertAttachment([FromBody] InsertAttachmentRequest request)
         {
-            var result = _business.InsertAttachment(model);
-            return Ok(result ? "Attachment Inserted" : "Failed");
+            _logic.AddAttachment(request);
+            return Ok("Attachment inserted successfully.");
         }
 
-        [HttpGet("GetAllAttachments/{masterId}")]
-        public IActionResult GetAllAttachments(long masterId)
+        [HttpGet("GetAllAttachment/{FCTID}")]
+        public IActionResult GetAllAttachment(int FCTID)
         {
-            var data = _business.GetAllAttachments(masterId);
-            return Ok(data);
+            var result = _logic.GetAllAttachments(FCTID);
+            return Ok(result);
         }
 
-        [HttpDelete("DeleteAttachment/{fileIndexId}")]
-        public IActionResult DeleteAttachment(Guid fileIndexId)
+        [HttpDelete("DeleteAttachment/{FileIndexID}")]
+        public IActionResult DeleteAttachment(int FileIndexID)
         {
-            var result = _business.DeleteAttachment(fileIndexId);
-            return Ok(result ? "Deleted Successfully" : "Delete Failed");
+            _logic.DeleteAttachment(FileIndexID);
+            return Ok("Attachment deleted successfully.");
         }
     }
 }

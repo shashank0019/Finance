@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
-using Finance.Models;
 using Microsoft.Extensions.Configuration;
+using Finance.Models;
 
 namespace Finance.DataAccess
 {
@@ -16,119 +14,79 @@ namespace Finance.DataAccess
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        // 1️⃣ Get Employee Details
-        public GetEmployeeDetailsModel GetEmployeeDetailsByMasterID(long masterId)
+        public DataTable GetEmployeeDetailsByMasterID(int FCTID)
         {
-            GetEmployeeDetailsModel details = new();
-            using (SqlConnection con = new(_connectionString))
-            using (SqlCommand cmd = new("FinanceComplianceTracker_GetEmployeeDetailsByMasterID", con))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
+                SqlCommand cmd = new SqlCommand("FinanceComplianceTracker_GetEmployeeDetailsByMasterID", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@MasterID", masterId);
+                cmd.Parameters.AddWithValue("@FCTID", FCTID);
 
-                con.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        details.MasterID = masterId;
-                        details.ModifyDueDate = reader["ModifyDueDate"] as DateTime?;
-                        details.CompletionDate = reader["CompletionDate"] as DateTime?;
-                        details.ApprovalDate = reader["ApprovalDate"] as DateTime?;
-                        details.IsDelay = reader["IsDelay"] as bool?;
-                        details.ReasonForDelay = reader["ReasonForDelay"].ToString();
-                        details.Penalty = reader["Penalty"].ToString();
-                        details.Remarks = reader["Remarks"].ToString();
-                        details.Status = reader["Status"].ToString();
-                    }
-                }
-            }
-            return details;
-        }
-
-        // 2️⃣ Update Employee Details
-        public bool UpdateEmployeeDetails(UpdateEmployeeDetailsModel model)
-        {
-            using (SqlConnection con = new(_connectionString))
-            using (SqlCommand cmd = new("FinanceComplianceTracker_UpdateEmpDetails", con))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@MasterID", model.MasterID);
-                cmd.Parameters.AddWithValue("@ModifyDueDate", (object?)model.ModifyDueDate ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@CompletionDate", (object?)model.CompletionDate ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ApprovalDate", (object?)model.ApprovalDate ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@IsDelay", (object?)model.IsDelay ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ReasonForDelay", model.ReasonForDelay ?? "");
-                cmd.Parameters.AddWithValue("@Penalty", model.Penalty ?? "");
-                cmd.Parameters.AddWithValue("@Remarks", model.Remarks ?? "");
-                cmd.Parameters.AddWithValue("@EmpCode", model.EmpCode ?? "");
-
-                con.Open();
-                return cmd.ExecuteNonQuery() > 0;
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
             }
         }
 
-        // 3️⃣ Insert Attachment
-        public bool InsertAttachment(InsertAttachmentModel model)
+        public void UpdateEmpDetails(UpdateEmpDetailsRequest req)
         {
-            using (SqlConnection con = new(_connectionString))
-            using (SqlCommand cmd = new("FinanceComplianceTracker_InsertAttachment", con))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
+                SqlCommand cmd = new SqlCommand("FinanceComplianceTracker_UpdateEmpDetails", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FCTID", req.FCTID);
+                cmd.Parameters.AddWithValue("@UpdatedDueDate", req.UpdatedDueDate);
+                cmd.Parameters.AddWithValue("@CompletionDate", req.CompletionDate);
+                cmd.Parameters.AddWithValue("@ApprovalDate", req.ApprovalDate);
+                cmd.Parameters.AddWithValue("@AnyDelay", req.AnyDelay);
+                cmd.Parameters.AddWithValue("@DelayReason", req.DelayReason);
+                cmd.Parameters.AddWithValue("@LateFessPenaltyInterest", req.LateFessPenaltyInterest);
 
-                cmd.Parameters.AddWithValue("@MasterID", model.MasterID);
-                cmd.Parameters.AddWithValue("@DocumentName", model.DocumentName);
-                cmd.Parameters.AddWithValue("@DocumentPath", model.DocumentPath);
-                cmd.Parameters.AddWithValue("@FileIndexID", model.FileIndexID);
-                cmd.Parameters.AddWithValue("@UploadedBy", model.UploadedBy);
-
-                con.Open();
-                return cmd.ExecuteNonQuery() > 0;
+                conn.Open();
+                cmd.ExecuteNonQuery();
             }
         }
 
-        // 4️⃣ Get All Attachments
-        public List<GetAllAttachmentsModel> GetAllAttachments(long masterId)
+        public void InsertAttachment(InsertAttachmentRequest req)
         {
-            List<GetAllAttachmentsModel> list = new();
-            using (SqlConnection con = new(_connectionString))
-            using (SqlCommand cmd = new("FinanceComplianceTracker_GetAllAttachment", con))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
+                SqlCommand cmd = new SqlCommand("FinanceComplianceTracker_InsertAttachment", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@MasterID", masterId);
+                cmd.Parameters.AddWithValue("@FCTID", req.FCTID);
+                cmd.Parameters.AddWithValue("@FileIndexID", req.FileIndexID);
 
-                con.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        list.Add(new GetAllAttachmentsModel
-                        {
-                            FileIndexID = (Guid)reader["FileIndexID"],
-                            MasterID = (long)reader["MasterID"],
-                            DocumentName = reader["DocumentName"].ToString(),
-                            DocumentPath = reader["DocumentPath"].ToString(),
-                            UploadedBy = reader["UploadedBy"].ToString(),
-                            UploadedOn = Convert.ToDateTime(reader["UploadedOn"])
-                        });
-                    }
-                }
+                conn.Open();
+                cmd.ExecuteNonQuery();
             }
-            return list;
         }
 
-        // 5️⃣ Delete Attachment
-        public bool DeleteAttachmentByFileIndexID(Guid fileIndexId)
+        public DataTable GetAllAttachment(int FCTID)
         {
-            using (SqlConnection con = new(_connectionString))
-            using (SqlCommand cmd = new("FinanceComplianceTracker_DeleteAttachmentByFileIndexID", con))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
+                SqlCommand cmd = new SqlCommand("FinanceComplianceTracker_GetAllAttachment", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@FileIndexID", fileIndexId);
+                cmd.Parameters.AddWithValue("@FCTID", FCTID);
 
-                con.Open();
-                return cmd.ExecuteNonQuery() > 0;
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                return dt;
+            }
+        }
+
+        public void DeleteAttachmentByFileIndexID(int FileIndexID)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("FinanceComplianceTracker_DeleteAttachmentByFileIndexID", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FileIndexID", FileIndexID);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
             }
         }
     }
